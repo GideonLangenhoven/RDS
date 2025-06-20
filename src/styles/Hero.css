@@ -1,0 +1,144 @@
+/* General container for the entire hero section */
+.hero-container {
+  width: 100%;
+  background-color: #ffffff; /* Assuming a white background */
+}
+
+/* Main content area with the two columns */
+.hero-main {
+  display: flex;
+  flex-wrap: wrap; /* Allows columns to stack on smaller screens */
+  align-items: stretch; /* Makes both columns equal height */
+  width: 100%;
+  max-width: 1920px; /* Optional: constrain max width */
+  margin: 0 auto;
+  border-bottom: 1.5px solid #ede6e6; /* subtle horizontal border below hero section */
+}
+
+/* Left Column (Services Info) */
+.hero-left {
+  color: #BDB0B0;
+  flex: 1; /* Takes up 1 part of the available space */
+  min-width: 360px; /* Prevents the column from getting too narrow */
+  background-color: #F5EBEB; /* The light pinkish-beige background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  border-right: 1.5px solid #ede6e6; /* vertical border between left and right */
+  box-sizing: border-box;
+}
+
+.hero-services-content {
+  text-align: center;
+  max-width: 300px;
+}
+
+.services-title {
+  font-family: 'Times New Roman', serif; /* A font similar to the image */
+  font-weight: 300;
+  font-size: 2.5rem; /* Adjust size as needed */
+  letter-spacing: 0.5em; /* Wide letter spacing */
+  color: #BDB0B0;
+  margin: 0 0 1.5rem 0;
+}
+
+.floral-icon {
+  width: 40px;
+  height: auto;
+  margin-bottom: 1.5rem;
+}
+
+.services-subtitle {
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: #BDB0B0;
+  margin: 0 0 2.5rem 0;
+}
+
+.discover-button {
+  display: inline-block;
+  font-family: 'Montserrat', sans-serif; /* A clean sans-serif font */
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: #C3B6B6;
+  text-decoration: none;
+  border: 1px solid #D8CCCC;
+  padding: 0.8rem 2.5rem;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.discover-button:hover {
+  background-color: #ffffff;
+  color: #A99999;
+}
+
+/* Right Column (Full-width Experience Section) */
+.hero-right {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-color: #000; /* Fallback background */
+}
+
+/* Experience text styling */
+.hero-experience-content {
+  text-align: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-experience-content h1,
+.hero-experience-content h2,
+.hero-experience-content h3 {
+  color: #fff;
+  margin: 0;
+  font-family: 'EB Garamond', serif;
+  letter-spacing: 0.12em;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+}
+
+.hero-floral-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7; /* Slightly transparent for better text readability */
+  z-index: 1;
+}
+
+/* Bottom Section (Full-width table image) */
+.hero-bottom {
+  width: 100%;
+  line-height: 0; /* Removes any extra space below the image */
+}
+
+.hero-table-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .hero-main {
+    flex-direction: column;
+    border-bottom: 1.5px solid #ede6e6;
+  }
+  .hero-left {
+    border-right: none;
+    border-bottom: 1.5px solid #ede6e6;
+  }
+  .hero-right {
+    min-width: 100%;
+  }
+}

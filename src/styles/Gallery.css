@@ -1,0 +1,97 @@
+.gallery-section {
+  position: relative;
+  color: #fff;
+  overflow: hidden;
+  background-color: #fff; /* Fallback background */
+}
+
+.gallery-background-image {
+  position: absolute;
+  top: -20vh;
+  left: 0;
+  width: 100%;
+  height: 140vh;
+  background-image: url('https://static.wixstatic.com/media/ec833a_89de362236df4ba09105813098c48a66~mv2.jpg');
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 1;
+  transition: opacity 1s 0.2s ease-in-out;
+  opacity: 0;
+}
+
+.gallery-section.in-view .gallery-background-image {
+  opacity: 1;
+}
+
+.gallery-content {
+  display: flex;
+  position: relative;
+  z-index: 2;
+  min-height: 70vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  align-items: center;
+}
+
+.gallery-text-column, .gallery-text-column-right {
+  flex: 1;
+  padding: 2rem;
+}
+
+.gallery-text-column-right {
+  background-color: rgba(178, 156, 147, 0.8); /* Semi-transparent overlay */
+  text-align: center;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s 0.4s ease-out, transform 1s 0.4s ease-out;
+}
+
+.gallery-section.in-view .gallery-text-column-right {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gallery-title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  letter-spacing: 0.43em;
+  margin-bottom: 1rem;
+}
+
+.gallery-description {
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  letter-spacing: 0.1em;
+  margin-bottom: 2rem;
+}
+
+.discover-button-gallery {
+  display: inline-block;
+  background-color: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 10px 28px;
+  text-decoration: none;
+  font-family: 'brandon-grot-w01-light', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.discover-button-gallery:hover {
+  background-color: #fff;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .gallery-content {
+      flex-direction: column;
+  }
+  .gallery-text-column-right {
+      width: 100%;
+      max-width: 500px;
+  }
+}

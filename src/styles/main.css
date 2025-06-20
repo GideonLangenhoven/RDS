@@ -1,0 +1,461 @@
+/* ==========================================================================
+   Font Imports
+   ========================================================================== */
+@font-face {
+  font-family: 'Montserrat Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('~@fontsource-variable/montserrat/files/montserrat-latin-wght-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ==========================================================================
+   Global Styles & Reset
+   ========================================================================== */
+
+/* Enables smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+  height: 100%;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat Variable', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #ffffff;
+  color: #2c3e50;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* This is the main container that enables snap-scrolling */
+.scroll-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory; /* This is the magic for snap-scrolling */
+    position: relative;
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap');
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #2c3e50;
+}
+
+h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h3 {
+  font-size: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #555;
+}
+
+a {
+  color: #3498db;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  color: #2980b9;
+  text-decoration: none;
+}
+
+ul, ol {
+  margin: 0 0 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   Layout & Containers
+   ========================================================================== */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section {
+  padding: 6rem 0;
+  position: relative;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-title h2 {
+  position: relative;
+  display: inline-block;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: #3498db;
+  border-radius: 2px;
+}
+
+.section-title p {
+  max-width: 750px;
+  margin: 0 auto;
+  color: #666;
+}
+
+/* Responsive Utilities */
+.text-center {
+  text-align: center !important;
+}
+
+.text-left {
+  text-align: left !important;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+.mt-5 { margin-top: 3rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+.mb-5 { margin-bottom: 3rem; }
+
+.pt-1 { padding-top: 0.5rem; }
+.pt-2 { padding-top: 1rem; }
+.pt-3 { padding-top: 1.5rem; }
+.pt-4 { padding-top: 2rem; }
+.pt-5 { padding-top: 3rem; }
+
+.pb-1 { padding-bottom: 0.5rem; }
+.pb-2 { padding-bottom: 1rem; }
+.pb-3 { padding-bottom: 1.5rem; }
+.pb-4 { padding-bottom: 2rem; }
+.pb-5 { padding-bottom: 3rem; }
+
+/* ==========================================================================
+   Scroll Sections (The "Slides")
+   ========================================================================== */
+.scroll-section {
+    height: 100vh;
+    width: 100%;
+    scroll-snap-align: start; /* Each section will snap to the top */
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Parallax Background Effect */
+.parallax-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-attachment: fixed; /* This creates the parallax effect */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.hero-section {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('https://images.unsplash.com/photo-1505238680356-667803448bb6?q=80&w=2070&auto=format&fit=crop');
+}
+
+.services-image-column {
+    /* !! IMPORTANT !! Replace with your image path */
+    background-image: url('https://images.unsplash.com/photo-1511285560921-506948335694?q=80&w=2070&auto=format&fit=crop');
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.gallery-section-bg {
+     /* !! IMPORTANT !! Replace with your image path */
+    background-image: url('https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop');
+}
+
+/* ==========================================================================
+   Section-Specific Styles
+   ========================================================================== */
+
+/* Column layouts for Services & Gallery */
+.column-strip {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 50px;
+    box-sizing: border-box;
+}
+
+.services-text-column {
+    background-color: #000000;
+}
+
+.section-icon {
+    width: 72px;
+    height: auto;
+    margin-bottom: 20px;
+    fill: #FFFFFF;
+}
+
+.discover-button {
+    display: inline-block;
+    padding: 12px 35px;
+    border: 2px solid #FFFFFF;
+    background-color: transparent;
+    color: #FFFFFF;
+    text-decoration: none;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    margin-top: 30px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.discover-button:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+}
+
+/* Testimonial Section */
+.testimonial-section {
+    background-color: #F5F5F7;
+    color: #000000;
+}
+
+.testimonial-icon {
+    width: 55px;
+    height: auto;
+    margin-bottom: 30px;
+    fill: #000000;
+}
+
+.testimonial-author {
+    color: #555555;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    margin-top: 20px;
+}
+
+/* Gallery Section */
+.gallery-column-empty {
+    flex-grow: 2;
+}
+
+.gallery-text-column {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+/* ==========================================================================
+   Footer Component
+   ========================================================================== */
+.site-footer {
+    width: 100%;
+    background-color: #000000;
+    padding: 40px 50px;
+    box-sizing: border-box;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    color: #CCCCCC;
+}
+
+.footer-column {
+    flex: 1;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.footer-column p, .footer-column a {
+    font-size: 18px;
+    line-height: 1.5em;
+    letter-spacing: 0.05em;
+    color: #CCCCCC;
+    text-decoration: none;
+}
+
+.footer-column a:hover {
+    color: #FFFFFF;
+}
+
+.footer-divider {
+    width: 1px;
+    height: 80px;
+    background-color: #444444;
+}
+
+.social-bar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.social-bar img {
+    width: 45px;
+    height: 45px;
+    filter: grayscale(100%) brightness(2);
+    transition: filter 0.3s ease;
+}
+
+.social-bar img:hover {
+    filter: none;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .mobile-menu-button {
+        display: flex;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.95);
+        transition: right 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-menu.open {
+        right: 0;
+    }
+
+    .nav-menu ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .nav-menu a {
+        font-size: 1.2rem;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-content p {
+        font-size: 1.2rem;
+    }
+}
+
+/* ==========================================================================
+   Additional Section Styles
+   ========================================================================== */
+
+.services-section {
+    background-color: #000000;
+}
+
+.testimonial-section {
+    background-color: #F5F5F7;
+    color: #000000;
+}
+
+.gallery-section {
+    background-color: #000000;
+}
+
+.contact-section {
+    background-color: #000000;
+}
