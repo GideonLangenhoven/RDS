@@ -4,7 +4,7 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Services from './pages/Services';
-import GalleryPage from './pages/Gallery';
+import GalleryPage from './components/gallery/Gallerys';
 import Contact from './pages/Contact';
 import './styles/main.css';
 import './styles/pages.css';
@@ -19,7 +19,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/gallerys" element={<GalleryPage />} />
           <Route path="/contact" element={<Contact />} />
           {/* Redirect any unknown paths to home */}
           <Route path="*" element={<Home />} />
