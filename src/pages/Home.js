@@ -1,10 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import './Home.css'; // Your final CSS file
 
-// --- 1. The Modal Component (Re-architected) ---
-// This component is now a "dumb" component. It holds NO internal state for the image index.
-// It receives the exact image to display and the functions to call for next/prev from its parent.
-// This eliminates all state synchronization bugs.
+// --- 1. The Modal Component (Fixed) ---
 const GalleryModal = ({ currentImage, onClose, onNext, onPrev }) => {
   // This useEffect hook handles all "side effects" when the modal is open
   useEffect(() => {
@@ -34,6 +31,13 @@ const GalleryModal = ({ currentImage, onClose, onNext, onPrev }) => {
     };
   }, [onClose, onNext, onPrev]); // Dependencies for the effect
 
+  // Handle backdrop click (only close when clicking the backdrop, not the content)
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   // If there's no image source for any reason, render nothing.
   if (!currentImage) {
     return null;
@@ -41,14 +45,25 @@ const GalleryModal = ({ currentImage, onClose, onNext, onPrev }) => {
 
   // The JSX for the modal
   return (
-    <div className="carousel-modal" onClick={onClose}>
+    <div className="carousel-modal" onClick={handleBackdropClick}>
       <button className="modal-close-button" onClick={onClose} aria-label="Close image view">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
 
-      {/* The onPrev function is now passed down from the parent */}
-      <button className="modal-nav-button modal-prev" onClick={onPrev} aria-label="Previous image">
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+      {/* Navigation buttons with proper event handling */}
+      <button 
+        className="modal-nav-button modal-prev" 
+        onClick={(e) => {
+          e.stopPropagation();
+          onPrev(e);
+        }} 
+        aria-label="Previous image"
+      >
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+         </svg>
       </button>
 
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -56,47 +71,53 @@ const GalleryModal = ({ currentImage, onClose, onNext, onPrev }) => {
         <img src={currentImage} alt="Full screen view of event" />
       </div>
       
-      {/* The onNext function is now passed down from the parent */}
-      <button className="modal-nav-button modal-next" onClick={onNext} aria-label="Next image">
-         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+      <button 
+        className="modal-nav-button modal-next" 
+        onClick={(e) => {
+          e.stopPropagation();
+          onNext(e);
+        }} 
+        aria-label="Next image"
+      >
+         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+           <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+         </svg>
       </button>
     </div>
   );
 };
 
-
-// --- 2. The Image Carousel Component (Re-architected) ---
-// This component is now the SINGLE SOURCE OF TRUTH. It manages the modal's
-// visibility and the currently selected index. It passes functions down to the modal.
+// --- 2. The Image Carousel Component ---
 const ImageCarousel = ({ images }) => {
   const [isPaused, setIsPaused] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [modalState, setModalState] = useState({ open: false, index: null });
 
   // --- Modal Control Functions ---
   const handleImageClick = (e, index) => {
     e.stopPropagation();
-    setSelectedImageIndex(index % images.length);
-    setIsModalOpen(true);
+    setModalState({ open: true, index: index % images.length });
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    // Setting index to null is fine here, as the modal will be unmounted.
-    setSelectedImageIndex(null);
-  };
+  const handleCloseModal = useCallback(() => {
+    setModalState({ open: false, index: null });
+  }, []);
 
   // --- Navigation Logic now lives in the parent ---
   const handleNextInModal = useCallback((e) => {
-    e.stopPropagation();
-    setSelectedImageIndex(prevIndex => (prevIndex + 1) % images.length);
+    if (e) e.stopPropagation();
+    setModalState((prev) => ({
+      ...prev,
+      index: (prev.index + 1) % images.length
+    }));
   }, [images.length]);
 
   const handlePrevInModal = useCallback((e) => {
-    e.stopPropagation();
-    setSelectedImageIndex(prevIndex => (prevIndex - 1 + images.length) % images.length);
+    if (e) e.stopPropagation();
+    setModalState((prev) => ({
+      ...prev,
+      index: (prev.index - 1 + images.length) % images.length
+    }));
   }, [images.length]);
-
 
   const imageList = [...images, ...images];
 
@@ -124,12 +145,10 @@ const ImageCarousel = ({ images }) => {
       </div>
 
       {/* Conditionally render the modal component with the new props */}
-      {isModalOpen && selectedImageIndex !== null && (
+      {modalState.open && modalState.index !== null && (
         <GalleryModal 
-          // Pass the exact image source string
-          currentImage={images[selectedImageIndex]} 
+          currentImage={images[modalState.index]} 
           onClose={handleCloseModal}
-          // Pass the navigation handler functions
           onNext={handleNextInModal}
           onPrev={handlePrevInModal}
         />
@@ -138,26 +157,53 @@ const ImageCarousel = ({ images }) => {
   );
 };
 
-
-// --- 3. The Main Home Page Component (No changes needed here) ---
+// --- 3. The Main Home Page Component ---
 const Home = () => {
     const [scrollY, setScrollY] = useState(0);
     const scrollerRef = useRef(null);
     const testimonialsContainerRef = useRef(null);
 
-    const galleryImages = [ "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1519167758481-83f29b1fe26d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", "https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" ];
+    const galleryImages = [ 
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1519167758481-83f29b1fe26d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+      "https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+    ];
+    
     const heroImage = "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80";
     const servicesImage = "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80";
-    const testimonials = [ { quote: "Working with this team was an absolute dream. They took our vision and brought it to life with such elegance and precision.", author: "Sarah & Tom", event: "Wedding Celebration", image: "https://images.unsplash.com/photo-1500048993953-d23a436266cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, { quote: "The professionalism and creativity are unmatched. The feedback from attendees was overwhelmingly positive. Flawlessly executed.", author: "Johnathan Lee", event: "CEO, Innovate Corp.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, { quote: "From the initial consultation to the day of the event, the communication was seamless. They are true experts in their field.", author: "Maria Garcia", event: "50th Anniversary Party", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, { quote: "I was truly impressed by their attention to detail. Every element was thoughtfully considered and beautifully implemented.", author: "Aisha Khan", event: "Product Launch Event", image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, { quote: "They transformed our charity fundraiser into an unforgettable evening, helping us exceed our fundraising goals.", author: "David Chen", event: "Director, Unity Foundation", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, { quote: "An incredible team that is both organized and inspired. They took all the stress out of planning and allowed us to simply enjoy our special day.", author: "Emily & Mark", event: "Private Estate Wedding", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" } ];
+    
+    const testimonials = [ 
+      { quote: "Working with this team was an absolute dream. They took our vision and brought it to life with such elegance and precision.", author: "Sarah & Tom", event: "Wedding Celebration", image: "https://images.unsplash.com/photo-1500048993953-d23a436266cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, 
+      { quote: "The professionalism and creativity are unmatched. The feedback from attendees was overwhelmingly positive. Flawlessly executed.", author: "Johnathan Lee", event: "CEO, Innovate Corp.", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, 
+      { quote: "From the initial consultation to the day of the event, the communication was seamless. They are true experts in their field.", author: "Maria Garcia", event: "50th Anniversary Party", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, 
+      { quote: "I was truly impressed by their attention to detail. Every element was thoughtfully considered and beautifully implemented.", author: "Aisha Khan", event: "Product Launch Event", image: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, 
+      { quote: "They transformed our charity fundraiser into an unforgettable evening, helping us exceed our fundraising goals.", author: "David Chen", event: "Director, Unity Foundation", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" }, 
+      { quote: "An incredible team that is both organized and inspired. They took all the stress out of planning and allowed us to simply enjoy our special day.", author: "Emily & Mark", event: "Private Estate Wedding", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80" } 
+    ];
+    
     const extendedTestimonials = [...testimonials, ...testimonials];
-    const clientLogos = [ 'https://logodix.com/logo/1722880.png', 'https://logodix.com/logo/1722880.png', 'https://logodix.com/logo/1722880.png', 'https://logodix.com/logo/1722880.png', 'https://logodix.com/logo/1722880.png', 'https://logodix.com/logo/1722880.png', ];
+    const clientLogos = [ 
+      'https://logodix.com/logo/1722880.png', 
+      'https://logodix.com/logo/1722880.png', 
+      'https://logodix.com/logo/1722880.png', 
+      'https://logodix.com/logo/1722880.png', 
+      'https://logodix.com/logo/1722880.png', 
+      'https://logodix.com/logo/1722880.png', 
+    ];
   
     useEffect(() => {
       const handleScroll = () => setScrollY(window.scrollY);
       window.addEventListener('scroll', handleScroll);
       const sections = document.querySelectorAll('.services-section, .testimonials-section');
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('in-view'); });
+        entries.forEach(entry => { 
+          if (entry.isIntersecting) entry.target.classList.add('in-view'); 
+        });
       }, { threshold: 0.1 });
       sections.forEach(section => observer.observe(section));
       return () => {
@@ -172,7 +218,15 @@ const Home = () => {
       const scroller = scrollerRef.current;
       if (!scroller) return;
       let scrollInterval;
-      const startScrolling = () => { scrollInterval = setInterval(() => { if (scroller.scrollLeft >= scroller.scrollWidth / 2) { scroller.scrollLeft = 0; } else { scroller.scrollLeft += 1; } }, 30); };
+      const startScrolling = () => { 
+        scrollInterval = setInterval(() => { 
+          if (scroller.scrollLeft >= scroller.scrollWidth / 2) { 
+            scroller.scrollLeft = 0; 
+          } else { 
+            scroller.scrollLeft += 1; 
+          } 
+        }, 30); 
+      };
       const stopScrolling = () => { clearInterval(scrollInterval); };
       startScrolling();
       const container = testimonialsContainerRef.current;
@@ -198,14 +252,30 @@ const Home = () => {
           <section className="hero-section">
             <div className="parallax-background" style={{ ...parallaxStyle, backgroundImage: `url(${heroImage})` }}></div>
             <div className="hero-pattern-overlay"></div>
-            <div className="hero-content"><div className="hero-text-content"><h1 className="hero-main-title">Timeless</h1><h2 className="hero-subtitle">Events</h2><h3 className="hero-accent">Crafted with Passion</h3></div></div>
-            <a href="#services" className="hero-scroll-indicator" aria-label="Scroll down"><div className="scroll-dot"></div></a>
+            <div className="hero-content">
+              <div className="hero-text-content">
+                <h1 className="hero-main-title">Timeless</h1>
+                <h2 className="hero-subtitle">Events</h2>
+                <h3 className="hero-accent">Crafted with Passion</h3>
+              </div>
+            </div>
+            <a href="#services" className="hero-scroll-indicator" aria-label="Scroll down">
+              <div className="scroll-dot"></div>
+            </a>
           </section>
 
           <section id="services" className="services-section">
             <div className="services-text-column">
               <div className="services-content">
-                <h2>Our Services</h2><div className="services-icon"><svg className="floral-ornament" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg"><path d="M10 20 Q30 5 50 20 Q70 35 90 20 Q110 5 120 20" stroke="#8b7355" strokeWidth="2" fill="none"/><circle cx="30" cy="15" r="3" fill="#8b7355"/><circle cx="60" cy="20" r="4" fill="#8b7355"/><circle cx="90" cy="15" r="3" fill="#8b7355"/></svg></div>
+                <h2>Our Services</h2>
+                <div className="services-icon">
+                  <svg className="floral-ornament" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 20 Q30 5 50 20 Q70 35 90 20 Q110 5 120 20" stroke="#8b7355" strokeWidth="2" fill="none"/>
+                    <circle cx="30" cy="15" r="3" fill="#8b7355"/>
+                    <circle cx="60" cy="20" r="4" fill="#8b7355"/>
+                    <circle cx="90" cy="15" r="3" fill="#8b7355"/>
+                  </svg>
+                </div>
                 <p>From intimate gatherings to grand celebrations, we specialize in creating unforgettable experiences tailored to your unique vision.</p>
                 <a href="/services" className="discover-button">Discover More</a>
               </div>
@@ -215,36 +285,54 @@ const Home = () => {
           
           <section className="testimonials-section">
               <div className="testimonials-header">
-                  <h2>What Our Clients Say</h2><div className="quote-icon">“</div>
+                  <h2>What Our Clients Say</h2>
+                  <div className="quote-icon">"</div>
               </div>
               <div className="testimonials-outer-container" ref={testimonialsContainerRef}>
                   <div className="testimonials-scroller" ref={scrollerRef}>
                       {extendedTestimonials.map((testimonial, index) => (
                           <div className="testimonial-card" key={index}>
-                              <div className="testimonial-image-wrapper"><img src={testimonial.image} alt={`Portrait of ${testimonial.author}`} /></div>
+                              <div className="testimonial-image-wrapper">
+                                <img src={testimonial.image} alt={`Portrait of ${testimonial.author}`} />
+                              </div>
                               <div className="testimonial-text-wrapper">
-                                  <h3 className="testimonial-heading">{testimonial.author}</h3><p className="testimonial-subheading">{testimonial.event}</p><p className="testimonial-quote">{`"${testimonial.quote}"`}</p>
+                                  <h3 className="testimonial-heading">{testimonial.author}</h3>
+                                  <p className="testimonial-subheading">{testimonial.event}</p>
+                                  <p className="testimonial-quote">{`"${testimonial.quote}"`}</p>
                               </div>
                           </div>
                       ))}
                   </div>
-                  <button className="testimonial-arrow-next" aria-label="Next testimonial" onClick={handleNextTestimonial}><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+                  <button className="testimonial-arrow-next" aria-label="Next testimonial" onClick={handleNextTestimonial}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </button>
               </div>
           </section>
   
           <section className="client-logo-ribbon">
-            <div className="logo-track-wrapper"><div className="logo-track">{[...clientLogos, ...clientLogos].map((logo, index) => (<img key={index} src={logo} alt={`Client logo ${index + 1}`} className="client-logo" />))}</div></div>
+            <div className="logo-track-wrapper">
+              <div className="logo-track">
+                {[...clientLogos, ...clientLogos].map((logo, index) => (
+                  <img key={index} src={logo} alt={`Client logo ${index + 1}`} className="client-logo" />
+                ))}
+              </div>
+            </div>
           </section>
   
           <section className="gallery-carousel-section">
             <div className="gallery-carousel-header">
-              <h2>Gallery of Success</h2><p>Explore a curated collection of our most memorable events, each telling a unique story of collaboration and celebration.</p>
+              <h2>Gallery of Success</h2>
+              <p>Explore a curated collection of our most memorable events, each telling a unique story of collaboration and celebration.</p>
             </div>
             <ImageCarousel images={galleryImages} />
-            <div className="gallery-carousel-cta"><a href="/gallery" className="discover-button-dark">View Full Gallery</a></div>
+            <div className="gallery-carousel-cta">
+              <a href="/gallery" className="discover-button-dark">View Full Gallery</a>
+            </div>
           </section>
         </div>
     );
-  };
+};
   
 export default Home;

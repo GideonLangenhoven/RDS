@@ -82,9 +82,7 @@ function Header() {
               <li className={isActive('/services') ? 'active' : ''}>
                 <Link to="/services" onClick={closeMobileMenu}>Services</Link>
               </li>
-              <li className={isActive('/testimonials') ? 'active' : ''}>
-                <Link to="/testimonials" onClick={closeMobileMenu}>Testimonials</Link>
-              </li>
+          
               <li className={isActive('/gallery') ? 'active' : ''}>
                 <Link to="/gallery" onClick={closeMobileMenu}>Gallery</Link>
               </li>
